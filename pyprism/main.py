@@ -26,7 +26,11 @@ def main(argv: t.Optional[t.List[str]] = None) -> None:
             description='このプログラムの説明（なくてもよい）')
     parser.add_argument('filename', help='input file')
     args, rest_argv = parser.parse_known_args(argv)
-    run_file(args.filename, args=rest_argv)
+    o=run_file(args.filename, args=rest_argv)
+    print("==stdout==")
+    print(o.stdout.decode("utf8"))
+    print("==stderr==")
+    print(o.stderr.decode("utf8"))
 
 if __name__ == "__main__":
     main()
