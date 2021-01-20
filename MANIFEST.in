@@ -1,0 +1,5 @@
+include pyprism/bin/*.out
+include pyprism/bin/*.bin
+include pyprism/bin/prism
+include pyprism/bin/upprism
+

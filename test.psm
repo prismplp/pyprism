@@ -1,0 +1,2 @@
+prism_main([]):-
+	format("hello world\n").
