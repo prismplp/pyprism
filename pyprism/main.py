@@ -5,19 +5,19 @@ import datetime as dt
 import argparse
 import typing as t
 
-def run(code):
+def run(code, args=[]):
     now = dt.datetime.now()
     filename = now.strftime('%Y%m%d-%H%M%S.psm')
     with open(filename,"w") as fp:
         fp.write(code)
-    return run_file(filename)
+    return run_file(filename,args)
 
 def run_file(filename, args=[]):
     path=os.path.dirname(__file__)
     files = glob.glob(path+"/*")
     cmd=path+"/bin/upprism"
     cmds=[cmd, filename]+args
-    out=subprocess.run(cmds,timeout=None)
+    out=subprocess.run(cmds,timeout=None,stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     return out
 
 def main(argv: t.Optional[t.List[str]] = None) -> None:
