@@ -1,0 +1,11 @@
+{
+  "display_name": "PRISM",
+  "language": "prism", 
+  "argv": [
+    "python", 
+    "/home/kojima/.ipython/kernels/prism/kernel.py",
+    "-f", "{connection_file}"
+  ], 
+  "codemirror_mode": "prolog"
+}
+
