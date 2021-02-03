@@ -12,8 +12,9 @@ import uuid
 
 __version__ = '0.0.1'
 
-version_pat = re.compile(r'(\d+\.\d+)')
+version_pat = re.compile(r'(\d+(\.\d+)+)')
 crlf_pat = re.compile(r'[\r\n]+')
+space_pat = re.compile(r'[\r\n\s ]+')
 
 class PRISMKernel(Kernel):
     implementation = 'prism_kernel'
@@ -24,12 +25,8 @@ class PRISMKernel(Kernel):
     @property
     def language_version(self):
         if self._language_version is None:
-            m = version_pat.search(check_output(['upprism', '--version']).decode('utf-8'))
-            prompt = "| ?- "
-            prism = replwrap.REPLWrapper("prism",prompt, None)
-            o=prism.run_command('get_version(X)')
-            m=version_pat.search(o)
-            self._language_version = m.group(1)
+            #m = version_pat.search(check_output(['prism', '--version']).decode('utf-8'))
+            self._language_version = "1"#m.group(1)
         return self._language_version
 
 
@@ -39,7 +36,7 @@ class PRISMKernel(Kernel):
 
 
     language_info = {'name': 'prism',
-                     'codemirror_mode': 'prolog',
+                     'codemirror_mode': 'scheme',
                      'mimetype': 'text/plain',
                      'file_extension': '.psm'}
 
@@ -55,7 +52,7 @@ class PRISMKernel(Kernel):
         # message handlers, we need to temporarily reset the SIGINT handler here
         # so that PRISM is interruptible.
         sig = signal.signal(signal.SIGINT, signal.SIG_DFL)
-        prompt = "| ?- "
+        prompt = "| ?-"
         try:
             self.prismwrapper = replwrap.REPLWrapper("prism", prompt, None)
         finally:
@@ -64,7 +61,36 @@ class PRISMKernel(Kernel):
 
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
-        code = crlf_pat.sub(' ', code.strip())
+        #code = crlf_pat.sub(' ', code.strip())
+        code_list = re.split(crlf_pat,code.strip())
+        new_code_list=[]
+        file_block_code=[]
+        for line in code_list:
+            line=line.strip()
+            if line[:2]=="#!":
+                file_block_code=re.split(space_pat,line)
+            else:
+                new_code_list.append(line)
+        code=" ".join(new_code_list)
+        if len(file_block_code)>1:
+            if file_block_code[1]=="prism-code":
+                if len(file_block_code)>2:
+                    name=file_block_code[2]
+                    filename=name+".psm"
+                    with open(filename,"w") as fp:
+                        for line in new_code_list:
+                            fp.write(line)
+                            fp.write("\n")
+                    message = {'name': 'stdout', 'text': "[SAVE] "+name}
+                else:
+                    message = {'name': 'stdout', 'text': "unknown name"}
+                self.send_response(self.iopub_socket, 'stream', message)
+                return {'status': 'ok', 'execution_count': self.execution_count,
+                        'payload': [], 'user_expressions': {}}
+            else:
+                message = {'name': 'stdout', 'text': "unknown command"+file_block_code[1]}
+                self.send_response(self.iopub_socket, 'stream', message)
+                return {'status': 'abort', 'execution_count': self.execution_count}
         if not code:
             return {'status': 'ok', 'execution_count': self.execution_count,
                     'payload': [], 'user_expressions': {}}
