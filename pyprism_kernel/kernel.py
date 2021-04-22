@@ -125,5 +125,5 @@ class PRISMKernel(Kernel):
 if __name__ == '__main__':
     from IPython.kernel.zmq.kernelapp import IPKernelApp
     os.makedirs(prism_wd_path,exist_ok=True)
-    os.chdir(prism_wd_path)
+    #os.chdir(prism_wd_path)
     IPKernelApp.launch_instance(kernel_class=PRISMKernel)
