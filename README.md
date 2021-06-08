@@ -5,12 +5,13 @@
  
 The PRISM included in this repository is from Ubuntu's recommended environment,
 please overwrite `pyprism/bin` if you want to use the one in your own environment.
-Note that the PRISM binary in this repository have been compiled and may not work well in other environments.
+The PRISM source code and binary can be downloaded from https://github.com/prismplp/prism .
+Note that the default PRISM binary in this repository have been compiled for the Google Colaboratory and may not work well in other environments.
 
 
 After that, please execute the following commands in this directory:
 ```
-pip install .
+pip install -U git+https://github.com/kojima-r/pyprism.git
 ```
 
 You can see examples of installation and usage of PyPRISM using Google Colaboratory from the link below:
@@ -47,9 +48,4 @@ Finally, please launch the jupyter notebook:
 jupyter notebook
 ```
 
-## Build
-
-"""
-python setup.py bdist_wheel
-"""
 
