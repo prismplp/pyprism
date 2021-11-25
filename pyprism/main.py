@@ -5,7 +5,7 @@ import datetime as dt
 import argparse
 import typing as t
 
-def run_(code, args=[]):
+def run(code, args=[]):
     prism_wd_path = './.prism_code/'
     now = dt.datetime.now()
     os.makedirs(prism_wd_path,exist_ok=True)
@@ -13,11 +13,6 @@ def run_(code, args=[]):
     with open(filename,"w") as fp:
         fp.write(code)
     return run_file(filename,args)
-
-def run(code, args=[]):
-    r=run_(code,args)
-    return r.stdout.decode("utf8")
-
 
 def run_file_(filename, args=[]):
     path=os.path.dirname(__file__)
