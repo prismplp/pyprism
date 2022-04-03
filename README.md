@@ -15,8 +15,7 @@ pip install -U git+https://github.com/kojima-r/pyprism.git
 ```
 
 You can see examples of installation and usage of PyPRISM using Google Colaboratory from the link below:
-- Hello world: https://colab.research.google.com/drive/1ePh-flwu0JRkCE9Zeq3RaYSJcLOL9-mD?usp=sharing
-- Hidden Markov Model: https://colab.research.google.com/drive/1wMhp98O3ahedbNNNw2vcDMMCHPXMLZED?usp=sharing
+https://drive.google.com/drive/folders/13wYs_eKxjNg2bmcagYkMNtX9t86Ddlcc?usp=sharing
 
 ## Installation of Jupyte notebook kernel for PRISM
 
