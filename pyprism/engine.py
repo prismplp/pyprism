@@ -32,8 +32,8 @@ class PRISMEngine:
 
     def run_file(self, filename, args=[]):
         r=self.run_file_(filename,args)
-        self.result_stdout=r.stdout.decode("utf8").split("\t")
-        self.result_stderr=r.stderr.decode("utf8").split("\t")
+        self.result_stdout=r.stdout.decode("utf8").split("\n")
+        self.result_stderr=r.stderr.decode("utf8").split("\n")
         return self.result_stdout
 
 
