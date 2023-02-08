@@ -5,7 +5,7 @@ import datetime as dt
 import argparse
 import typing as t
 
-class PRISMEngine:
+class PrismEngine:
     def __init__(self,bin_path=None, wd_path='./.prism_code/'):
         if bin_path is None:
             path=os.path.dirname(os.path.abspath(__file__))
@@ -36,6 +36,7 @@ class PRISMEngine:
         self.result_stderr=r.stderr.decode("utf8").split("\n")
         return self.result_stdout
 
+PRISMEngine = PrismEngine # compatibility
 
 def main():
     engine=PRISMEngine()
