@@ -19,7 +19,6 @@ class PrismEngine:
     
     def set_db(self, code):
         self.db=code
-        return self.run_file(filename,args)
 
     def query(self, q, args=[]):
         ### generate query
