@@ -15,6 +15,38 @@ class PrismEngine:
         self.wd_path=wd_path
         self.result_stdout=None
         self.result_stderr=None
+        self.db=""
+    
+    def set_db(self, code):
+        self.db=code
+        return self.run_file(filename,args)
+
+    def query(self, q, args=[]):
+        ### generate query
+        if q.srtip()[-1]==".":
+            code=self.db+"prism_main :-"+q
+        else:
+            code=self.db+"prism_main :-"+q+"."
+        ### run
+        out=self.run(code,args)
+        if len(out)<7:
+            return None, "error"
+        open_msg=out[:7]
+        warn_msg=[]
+        load_msg=[]
+        msgs=[]
+        ret_msg=""
+        prev=None
+        for el in out[7:]:
+            if el[:10]=="** Warning":
+                warn_msg.append(el)
+            elif el[:9]=="loading::":
+                laod_msg.append(el)
+            else:
+                msgs.append(el)
+        if len(msgs)<3:
+            return None, "error"
+        return msgs[:-3], msgs[-2]
 
     def run(self, code, args=[]):
         now = dt.datetime.now()
