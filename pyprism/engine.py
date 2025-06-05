@@ -22,7 +22,7 @@ class PrismEngine:
 
     def query(self, q, args=[]):
         ### generate query
-        if q.srtip()[-1]==".":
+        if q.strip()[-1]==".":
             code=self.db+"prism_main :-"+q
         else:
             code=self.db+"prism_main :-"+q+"."
