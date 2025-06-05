@@ -40,7 +40,7 @@ class PrismEngine:
             if el[:10]=="** Warning":
                 warn_msg.append(el)
             elif el[:9]=="loading::":
-                laod_msg.append(el)
+                load_msg.append(el)
             else:
                 msgs.append(el)
         if len(msgs)<3:
