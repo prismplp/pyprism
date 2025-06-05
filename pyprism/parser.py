@@ -94,10 +94,10 @@ def serialize_term(obj):
     if isinstance(obj, dict) and 'name' in obj:
         # function
         func = obj['name']
-        args = ','.join(serialize_expr(arg) for arg in obj['args'])
+        args = ','.join(serialize_term(arg) for arg in obj['args'])
         return f"{func}({args})"
     elif isinstance(obj, list):
-        return '[' + ','.join(serialize_expr(item) for item in obj) + ']'
+        return '[' + ','.join(serialize_term(item) for item in obj) + ']'
     elif isinstance(obj, str):
       if name_pattern.match(obj):
         return obj
