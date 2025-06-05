@@ -23,9 +23,9 @@ class PrismEngine:
     def query(self, q, args=[]):
         ### generate query
         if q.strip()[-1]==".":
-            code=self.db+"prism_main :-"+q
+            code=self.db+"\nprism_main :-"+q+"\n"
         else:
-            code=self.db+"prism_main :-"+q+"."
+            code=self.db+"\nprism_main :-"+q+".\n"
         ### run
         out=self.run(code,args)
         if len(out)<7:
