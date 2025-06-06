@@ -118,13 +118,13 @@ def read_sw(filename):
       if sw["name"]=="switch":
         obj=sw["args"][0]
         s=serialize_term(obj)
-        fixed_param=sw["args"][1]
+        status=sw["args"][1]
         values=sw["args"][2]
         params=sw["args"][3]
         
         sw_list.append({"term":s,
                         "term_obj":obj,
-                        "fixed":fixed_param,
+                        "status":status,
                         "values":values,
                         "params":params})
   return sw_list

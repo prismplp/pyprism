@@ -20,12 +20,23 @@ class PrismEngine:
     def set_db(self, code):
         self.db=code
 
-    def query(self, q, args=[]):
+    def query(self, q,out=None, args=[]):
         ### generate query
         if q.strip()[-1]==".":
-            code=self.db+"\nprism_main :-"+q+"\n"
-        else:
-            code=self.db+"\nprism_main :-"+q+".\n"
+            q=q.strip()[:-1]
+        ### generate output query
+        if out is not None and len(out)>0:
+            s="'"+"','".join(out)+"'"
+            q=""" findall([{}], ({}),_Temp_),
+              maplist(_TempX_ ,
+                ( [_TempXSym1_|_TempXSymR_]=[{}],
+                  [_TempX1_|_TempXR_]=_TempX_,
+                  format("~w=~w",[_TempXSym1_,_TempX1_]),
+                maplist(_TempXSym_,_TempXEl_,
+                  (format(",~w=~w",[_TempXSym_,_TempXEl_]))
+                  ,_TempXSymR_,_TempXR_),
+                format("\n") ) ,_Temp_)""".format(",".join(out),q,s)
+        code=self.db+"\nprism_main :-"+q+".\n"
         ### run
         out=self.run(code,args)
         if len(out)<7:
