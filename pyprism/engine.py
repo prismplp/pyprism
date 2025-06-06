@@ -20,12 +20,16 @@ class PrismEngine:
     def set_db(self, code):
         self.db=code
 
-    def query(self, q,out=None, args=[]):
+    def query(self, q, findall=False, out=None, verbose=False,args=[]):
         ### generate query
         if q.strip()[-1]==".":
             q=q.strip()[:-1]
         ### generate output query
-        if out is not None and len(out)>0:
+        if out is not None and len(out)>0 and not findall:
+            s=",".join(['format("{}=~w,",{})'.format(el,el) for el in out[:-1]])
+            s+=',format("{}=~w\n",{})'.format(out[-1],out[-1])
+            q=q+","+s
+        elif out is not None and len(out)>0 and findall:
             s="'"+"','".join(out)+"'"
             q=""" findall([{}], ({}),_Temp_),
               maplist(_TempX_ ,
@@ -36,9 +40,14 @@ class PrismEngine:
                   (format(",~w=~w",[_TempXSym_,_TempXEl_]))
                   ,_TempXSymR_,_TempXR_),
                 format("\n") ) ,_Temp_)""".format(",".join(out),q,s)
+        if verbose:
+            print("new query:",q)
         code=self.db+"\nprism_main :-"+q+".\n"
         ### run
         out=self.run(code,args)
+        if verbose:
+            print(self.result_stdout)
+            print(self.result_stderr)
         if len(out)<7:
             return None, "error"
         open_msg=out[:7]
