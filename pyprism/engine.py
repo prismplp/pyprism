@@ -27,7 +27,10 @@ class PrismEngine:
         ### generate output query
         if out is not None and len(out)>0 and not findall:
             s=",".join(['format("{}=~w,",{})'.format(el,el) for el in out[:-1]])
-            s+=',format("{}=~w\n",{})'.format(out[-1],out[-1])
+            if len(out)==1:
+                s=',format("{}=~w\n",{})'.format(out[-1],out[-1])
+            else:
+                s+=',format("{}=~w\n",{})'.format(out[-1],out[-1])
             q=q+","+s
         elif out is not None and len(out)>0 and findall:
             s="'"+"','".join(out)+"'"
