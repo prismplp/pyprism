@@ -1,6 +1,11 @@
 # PyPRISM: PRISM Python interface
 
 
+This project is used in the following tutorials:
+
+T-PRISM tutorial:　[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16yzyaglTq0nTvgzZS_nJHEPleddYgxfB?usp=sharing)
+
+
 ## Installation of PyPRISM
  
 The PRISM included in this repository is from Ubuntu's recommended environment,
