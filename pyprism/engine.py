@@ -1,4 +1,5 @@
 import os
+import sys
 import glob
 import subprocess
 import datetime as dt
@@ -20,7 +21,7 @@ class PrismEngine:
     def set_db(self, code):
         self.db=code
 
-    def query(self, q, findall=False, out=None, verbose=False,args=[]):
+    def query(self, q, findall=False, out=None, err_verbose=True, verbose=False,args=[]):
         ### generate query
         if q.strip()[-1]==".":
             q=q.strip()[:-1]
@@ -53,7 +54,8 @@ class PrismEngine:
         out=self.run(code,args)
         if verbose:
             print("\n".join(self.result_stdout))
-            print("\n".join(self.result_stderr))
+        if err_verbose:
+            print("\n".join(self.result_stderr), file=sys.stderr)
         if len(out)<7:
             return None, "error"
         open_msg=out[:7]
