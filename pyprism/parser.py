@@ -168,6 +168,22 @@ def parse_term(s):
     tokens = TokenStream(tokenize(s))
     return parse_expr(tokens)
 
+def parse_output_(obj):
+    if isinstance(obj, dict) and 'binop' in obj:
+        if obj['binop']=="=":
+            s1=serialize_term(obj['left'])
+            s2=serialize_term(obj['right'])
+            return (s1, s2)
+    return None
+
+def parse_output(s):
+    obj=parse_term("("+s+")")
+    if isinstance(obj, dict) and 'tuple' in obj:
+        return [parse_output_(o) for o in obj["tuple"]]
+    else:
+        if isinstance(obj, dict) and 'binop' in obj:
+            return [parse_output_(obj)]
+
 def serialize_term(obj, unary_op_paren=True, binary_op_paren=True):
     name_pattern=re.compile(r'^[A-Za-z_][A-Za-z_0-9]*$')
     if isinstance(obj, dict) and 'name' in obj:
