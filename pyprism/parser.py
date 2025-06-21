@@ -40,14 +40,45 @@ class TokenStream:
 
 # Priority (The higher the number, the more priority)
 PRECEDENCE = {
-    '=': 1,
-    '<': 2, '>': 2,
-    '+': 3, '-': 3,
-    '*': 4, '/': 4,
+    ':-': 0,
+    '?-': 0,
+    ';': 100,
+    ',': 200,
+    '=': 500,
+    '<': 500, '>': 500,
+    '=<': 500, '>=': 500,
+    '==': 500, '=\=': 500,
+    '=:=': 500, '\==': 500,
+    '+': 700, '-': 700,
+    '*': 800, '/': 800,
 }
 
 # Prefix operators (currently + and -)
-PREFIX_OPS = {'+', '-'}
+PREFIX_OPS = {'+', '-', ':-'}
+
+def parse_tuple_or_paren_expr(ts):
+    items = []
+    first = parse_expr(ts)
+    items.append(first)
+
+    while True:
+        tok = ts.peek()
+        if tok is None:
+            raise SyntaxError("Unclosed ')'")
+        if tok[0] == 'COMMA':
+            ts.next()
+            expr = parse_expr(ts)
+            items.append(expr)
+        elif tok[0] == 'RPAREN':
+            ts.next()
+            break
+        else:
+            raise SyntaxError(f"Unexpected token in tuple or paren: {tok}")
+
+    if len(items) == 1:
+        return items[0]
+    else:
+        return {'tuple': items}
 
 def parse_expr(ts, min_prec=0):
     tok = ts.peek()
@@ -104,12 +135,13 @@ def parse_atom(ts):
 
     elif kind == 'LPAREN':
         ts.next()
-        expr = parse_expr(ts)
-        if ts.peek() and ts.peek()[0] == 'RPAREN':
-            ts.next()
-            return expr
-        else:
-            raise SyntaxError("Expected ')'")
+        return parse_tuple_or_paren_expr(ts)
+        #expr = parse_expr(ts)
+        #if ts.peek() and ts.peek()[0] == 'RPAREN':
+        #    ts.next()
+        #    return expr
+        #else:
+        #    raise SyntaxError("Expected ')'")
     elif kind == 'LBRACK':
         ts.next()
         return parse_args(ts, end_kind='RBRACK')
@@ -136,7 +168,7 @@ def parse_term(s):
     tokens = TokenStream(tokenize(s))
     return parse_expr(tokens)
 
-def serialize_term(obj):
+def serialize_term(obj, unary_op_paren=True, binary_op_paren=True):
     name_pattern=re.compile(r'^[A-Za-z_][A-Za-z_0-9]*$')
     if isinstance(obj, dict) and 'name' in obj:
         # function
@@ -147,13 +179,22 @@ def serialize_term(obj):
         # unary op
         name = obj["unary"]
         expr = serialize_term(obj["expr"])
-        return f"{name}{expr}"
+        if unary_op_paren:
+            return f"({name}{expr})"
+        else:
+            return f"{name}{expr}"
     if isinstance(obj, dict) and 'binop' in obj:
-        # unary op
+        # binary op
         name = obj["binop"]
         lhs = serialize_term(obj["left"])
         rhs = serialize_term(obj["right"])
-        return f"{lhs}{name}{rhs}"
+        if binary_op_paren:
+            return f"({lhs}{name}{rhs})"
+        else:
+            return f"{lhs}{name}{rhs}"
+    if isinstance(obj, dict) and 'tuple' in obj:
+        # tuple
+        return '(' + ','.join(serialize_term(item) for item in obj["tuple"]) + ')'
     elif isinstance(obj, list):
         return '[' + ','.join(serialize_term(item) for item in obj) + ']'
     elif isinstance(obj, str):
