@@ -4,8 +4,9 @@ import json
 def tokenize(s):
     token_specification = [
         ('STRING',  r'\"(\\.|[^"\\])*\"|\'(\\.|[^\'\\])*\''),
-        ('NUMBER',  r'[\-e\d+\.\d]+|\d+'),  # 小数 or 整数
-        ('NAME',    r'[A-Za-z_][A-Za-z_0-9]*'),
+        ('OP',      r'[\+\-\*/=><:]+'),  # 演算子
+        ('NUMBER',  r'(?:\d+\.\d*|\.\d+|\d+)(?:[eE][\+\-]?\d+)?'),  # 小数 or 整数
+        ('NAME',    r'[A-Za-z_][A-Za-z0-9_]*'),
         ('COMMA',   r','),
         ('LPAREN',  r'\('),
         ('RPAREN',  r'\)'),
@@ -37,14 +38,57 @@ class TokenStream:
         self.pos += 1
         return tok
 
-def parse_expr(ts):
+# Priority (The higher the number, the more priority)
+PRECEDENCE = {
+    '=': 1,
+    '<': 2, '>': 2,
+    '+': 3, '-': 3,
+    '*': 4, '/': 4,
+}
+
+# Prefix operators (currently + and -)
+PREFIX_OPS = {'+', '-'}
+
+def parse_expr(ts, min_prec=0):
     tok = ts.peek()
     if tok is None:
-        return None
+        raise SyntaxError("Unexpected end of input")
 
     kind, value = tok
 
-    if kind == 'NAME' or kind=='STRING':
+    # Prefix unary operators
+    if kind == 'OP' and value in PREFIX_OPS:
+        ts.next()
+        right = parse_expr(ts, PRECEDENCE[value])
+        node = {'unary': value, 'expr': right}
+    else:
+        node = parse_atom(ts)
+
+    # Precedence binary operators
+    while True:
+        tok = ts.peek()
+        if tok is None or tok[0] != 'OP':
+            break
+        op = tok[1]
+        prec = PRECEDENCE.get(op)
+        if prec is None or prec < min_prec:
+            break
+        ts.next()
+        rhs = parse_expr(ts, prec + 1)
+        node = {'binop': op, 'left': node, 'right': rhs}
+
+    return node
+
+
+
+def parse_atom(ts):
+    tok = ts.peek()
+    if tok is None:
+        raise SyntaxError("Unexpected end of input")
+
+    kind, value = tok
+
+    if kind == 'NAME' or kind == 'STRING':
         ts.next()
         next_tok = ts.peek()
         if next_tok and next_tok[0] == 'LPAREN':
@@ -56,16 +100,19 @@ def parse_expr(ts):
 
     elif kind == 'NUMBER':
         ts.next()
-        return float(value) if '.' in value else int(value)
+        return float(value) if '.' in value or 'e' in value.lower() else int(value)
 
     elif kind == 'LPAREN':
         ts.next()
-        return parse_args(ts, end_kind='RPAREN')
-
+        expr = parse_expr(ts)
+        if ts.peek() and ts.peek()[0] == 'RPAREN':
+            ts.next()
+            return expr
+        else:
+            raise SyntaxError("Expected ')'")
     elif kind == 'LBRACK':
         ts.next()
         return parse_args(ts, end_kind='RBRACK')
-
     else:
         raise SyntaxError(f'Unexpected token: {tok}')
 
@@ -96,6 +143,17 @@ def serialize_term(obj):
         func = obj['name']
         args = ','.join(serialize_term(arg) for arg in obj['args'])
         return f"{func}({args})"
+    if isinstance(obj, dict) and 'unary' in obj:
+        # unary op
+        name = obj["unary"]
+        expr = serialize_term(obj["expr"])
+        return f"{name}{expr}"
+    if isinstance(obj, dict) and 'binop' in obj:
+        # unary op
+        name = obj["binop"]
+        lhs = serialize_term(obj["left"])
+        rhs = serialize_term(obj["right"])
+        return f"{lhs}{name}{rhs}"
     elif isinstance(obj, list):
         return '[' + ','.join(serialize_term(item) for item in obj) + ']'
     elif isinstance(obj, str):
