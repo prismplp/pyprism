@@ -171,7 +171,8 @@ def load_discrete_diabetes(
     disc_bins_x: int = 5,          # Number of bins used to discretize each feature column in X
     disc_bins_y: int = 8,          # Number of bins used to discretize the target y
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
-    thresh_uniq_y: int = 10        # Threshold for number of unique values in y before discretizing
+    thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
+    out_filename=None
 ):  # Returns: discretized X, y, and list of feature names
     """
     This function loads the diabetes dataset, applies missing values if specified,
@@ -179,4 +180,4 @@ def load_discrete_diabetes(
 
     """
     X,y=sklearn.datasets.load_diabetes(return_X_y=True,as_frame=True,scaled=False)
-    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y)
+    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename)
