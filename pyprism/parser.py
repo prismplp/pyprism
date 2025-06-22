@@ -245,7 +245,7 @@ def read_sw(filename):
   return sw_list
 
 def read_sw_data(filename,use_array=False):
-  sw_list=pyprism.read_sw(filename)
+  sw_list=read_sw(filename)
   #[Name	Arity	Term	Status	Vals	Param	Arg1	Arg2	Arg3	Arg4	Arg5]
   data=[]
   for el in sw_list:
