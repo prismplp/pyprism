@@ -251,7 +251,7 @@ def read_sw_data(filename,use_array=False):
   for el in sw_list:
     name=el["term_obj"]["name"] if "name" in el["term_obj"] else str(el["term_obj"])
     arity=len(el["term_obj"]["args"]) if "name" in el["term_obj"] else 0
-    args=[pyprism.serialize_term(el) for el in el["term_obj"]["args"]] if "name" in el["term_obj"] else []
+    args=[serialize_term(el) for el in el["term_obj"]["args"]] if "name" in el["term_obj"] else []
     if use_array:
       l=[name,arity,el["term"],el["status"],el["values"],el["params"]]
     else:
