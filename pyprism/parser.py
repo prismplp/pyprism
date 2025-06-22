@@ -243,3 +243,32 @@ def read_sw(filename):
                         "values":values,
                         "params":params})
   return sw_list
+
+def read_sw_data(filename,use_array=False):
+  sw_list=pyprism.read_sw(filename)
+  #[Name	Arity	Term	Status	Vals	Param	Arg1	Arg2	Arg3	Arg4	Arg5]
+  data=[]
+  for el in sw_list:
+    name=el["term_obj"]["name"] if "name" in el["term_obj"] else str(el["term_obj"])
+    arity=len(el["term_obj"]["args"]) if "name" in el["term_obj"] else 0
+    args=[pyprism.serialize_term(el) for el in el["term_obj"]["args"]] if "name" in el["term_obj"] else []
+    if use_array:
+      l=[name,arity,el["term"],el["status"],el["values"],el["params"]]
+    else:
+      l=[name,arity,el["term"],el["status"],"["+",".join(map(str,el["values"]))+"]","["+",".join(map(str,el["params"]))+"]"]
+    data.append((l,args))
+  n_arg=max(max([len(args) for line,args in data]),5)
+  return data,n_arg
+
+def sw2tsv(filename,out_filename):
+  data,m = read_sw_data(filename)
+  with open(out_filename,"w") as ofp:
+    h1=["Name","Arity","Term","Status","Vals","Param"]
+    h2=["Arg"+str(i+1) for i in range(m)]
+    ofp.write("\t".join(h1+h2))
+    ofp.write("\n")
+    for line,args in data:
+      line_=line+args+[""]*(m-len(args))
+      ofp.write("\t".join(map(str,line_)))
+      ofp.write("\n")
+
