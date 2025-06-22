@@ -156,8 +156,14 @@ def preprocess(X,y,
     if out_filename:
         to_dat(X_discretized, y_discretized, out_filename)
 
-    attr_atom_list=X_discretized.columns
-    return X_discretized, y_discretized,discretizers,discretizer_y, attr_atom_list
+    attr_list=X_discretized.columns
+    out={"X":X,
+        "Y":Y,
+        "x_discretized":x_discretized,"y_discretized":y_discretized,
+        "discretizers":discretizers,
+        "discretizer_y":discretizer_y,
+        "attr_list":attr_list}
+    return out
 
 def load_discrete_diabetes(
     missing_px: float = 0.0,       # Probability of introducing missing values in features X (0.0 to 1.0)
