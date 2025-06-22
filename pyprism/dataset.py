@@ -184,7 +184,10 @@ def preprocess(X,y,
 
       # Apply the same discretizers to test data
       X_test_disc = apply_discretizer(X_test, discretizers, thresh_uniq=thresh_uniq_x)
-      y_test_disc = pd.Series(discretizer_y.transform(y_test.values.reshape(-1, 1)).flatten(), index=y_test.index)
+      if discretizer_y is not None:
+          y_test_disc = pd.Series(discretizer_y.transform(y_test.values.reshape(-1, 1)).flatten(), index=y_test.index)
+      else:
+          y_test_disc = y_test
     else:
       X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
       y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
