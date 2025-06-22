@@ -143,7 +143,8 @@ def preprocess(X,y,
     disc_bins_x: int = 5,          # Number of bins used to discretize each feature column in X
     disc_bins_y: int = 8,          # Number of bins used to discretize the target y
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
-    thresh_uniq_y: int = 10        # Threshold for number of unique values in y before discretizing
+    thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
+    out_filename=None
 ):  # Returns: discretized X, y, and list of feature names
     if missing_px>0:
         X=add_missing(X,p=missing_px)
@@ -152,10 +153,11 @@ def preprocess(X,y,
 
     X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
     y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
-    to_dat(X_discretized, y_discretized)
+    if out_filename:
+        to_dat(X_discretized, y_discretized, out_filename)
 
     attr_atom_list=X_discretized.columns
-    return X_discretized, y_discretized, attr_atom_list
+    return X_discretized, y_discretized,discretizers,discretizer_y, attr_atom_list
 
 def load_discrete_diabetes(
     missing_px: float = 0.0,       # Probability of introducing missing values in features X (0.0 to 1.0)
