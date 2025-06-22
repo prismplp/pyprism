@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import KBinsDiscretizer
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 def add_missing(df: pd.DataFrame, p: float) -> pd.DataFrame:
   """
@@ -140,6 +141,24 @@ def to_dat(X_discretized: pd.DataFrame, y_discretized: pd.DataFrame, out_filenam
           else:
               fp.write(pred+"(["+','.join(row) + ']).\n')
 
+def apply_discretizer(X, discretizers, thresh_uniq=10):
+    """Apply fitted discretizers to X."""
+    X_discretized = X.copy()
+    for col, discretizer in discretizers.items():
+        col_data = X[col]
+        if col_data.isnull().all():
+            continue
+        transformed = discretizer.transform(col_data.values.reshape(-1, 1))
+        X_discretized[col] = pd.Series(transformed.flatten(), index=X.index)
+
+    # Keep any discrete columns unchanged
+    for col in X.columns:
+        if col not in discretizers:
+            X_discretized[col] = X[col]
+    
+    return X_discretized
+
+
 def preprocess(X,y,
     missing_px: float = 0.0,       # Probability of introducing missing values in features X (0.0 to 1.0)
     missing_py: float = 0.0,       # Probability of introducing missing values in target y (0.0 to 1.0)
@@ -148,23 +167,39 @@ def preprocess(X,y,
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
     out_filename=None,
+    out_test_filename=None,
     pred="data",
-    with_y=True
+    with_y=True,
+    test_ratio=0.0
 ):  # Returns: discretized X, y, and list of feature names
     if missing_px>0:
         X=add_missing(X,p=missing_px)
     if missing_py>0:
         y=add_missing(y,p=missing_py)
+    if test_ratio>0:
+      X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_ratio, random_state=42)
 
-    X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
-    y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
-    if out_filename:
-        to_dat(X_discretized, y_discretized, out_filename,pred=pred,with_y=with_y)
+      X_discretized, discretizers=discretize(X_train,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
+      y_discretized, discretizer_y=discretize_y(y_train,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
 
+      # Apply the same discretizers to test data
+      X_test_disc = apply_discretizer(X_test, discretizers, thresh_uniq=thresh_uniq_x)
+      y_test_disc = pd.Series(discretizer_y.transform(y_test.values.reshape(-1, 1)).flatten(), index=y_test.index)
+    else:
+      X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
+      y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
+      X_test_disc=None
+      y_test_disc=None
+
+    if out_filename is not None:
+      to_dat(X_discretized, y_discretized, out_filename,pred=pred,with_y=with_y)
+    if out_test_filename is not None and X_test_disc is not None:
+      to_dat(X_test_disc, y_test_disc, out_test_filename,pred=pred,with_y=with_y)
     attr_list=X_discretized.columns
     out={"X":X,
         "y":y,
         "X_discretized":X_discretized,"y_discretized":y_discretized,
+        "X_test_discretized":X_test_disc,"y_test_discretized":y_test_disc,
         "X_discretizers":discretizers,
         "y_discretizer":discretizer_y,
         "attr_list":attr_list}
@@ -178,8 +213,10 @@ def load_discrete_diabetes(
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
     out_filename=None,
+    out_test_filename=None,
     pred="data",
     with_y=True,
+    test_ratio=0.0
 ):  # Returns: discretized X, y, and list of feature names
     """
     This function loads the diabetes dataset, applies missing values if specified,
@@ -187,4 +224,27 @@ def load_discrete_diabetes(
 
     """
     X,y=sklearn.datasets.load_diabetes(return_X_y=True,as_frame=True,scaled=False)
-    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,pred=pred,with_y=with_y)
+    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,out_test_filename=out_test_filename,pred=pred,with_y=with_y,test_ratio=test_ratio)
+
+
+def load_discrete_california_housing(
+    missing_px: float = 0.0,       # Probability of introducing missing values in features X (0.0 to 1.0)
+    missing_py: float = 0.0,       # Probability of introducing missing values in target y (0.0 to 1.0)
+    disc_bins_x: int = 5,          # Number of bins used to discretize each feature column in X
+    disc_bins_y: int = 8,          # Number of bins used to discretize the target y
+    thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
+    thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
+    out_filename=None,
+    out_test_filename=None,
+    pred="data",
+    with_y=True,
+    test_ratio=0.0
+):  # Returns: discretized X, y, and list of feature names
+    """
+    This function loads the diabetes dataset, applies missing values if specified,
+# and discretizes both features (X) and target (y).
+
+    """
+    X,y=sklearn.datasets.fetch_california_housing(return_X_y=True,as_frame=True)
+    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,out_test_filename=out_test_filename,pred=pred,with_y=with_y,test_ratio=test_ratio)
+
