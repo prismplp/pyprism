@@ -158,7 +158,7 @@ def preprocess(X,y,
 
     attr_list=X_discretized.columns
     out={"X":X,
-        "Y":Y,
+        "y":y,
         "x_discretized":x_discretized,"y_discretized":y_discretized,
         "discretizers":discretizers,
         "discretizer_y":discretizer_y,
