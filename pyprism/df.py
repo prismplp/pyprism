@@ -87,27 +87,35 @@ def disc2binlist(disc):
   return ["{:0.1f}-{:0.1f}".format(e1,e2) for e1,e2 in zip(bin[:-1],bin[1:])]
 
 
-def plot_dist(df_, attr_val,group_key=None,title=""):
+def _get_group_label(idx,group_key,group_mapping):
+  if group_key is not None:
+    label = list(df_[group_key])[idx]
+    if group_mapping is not None and isinstance(group_mapping,list):
+      label = group_mapping[int(label)]
+    elif group_mapping is not None:
+      label = group_mapping[label]
+  elif group_mapping is not None:
+    label = group_mapping[idx]
+  else:
+    label = f"Group {idx+1}"
+  return label
+
+def plot_dist(df_, attr_val=None,group_key=None,group_mapping=None,title=""):
+    # Bar width per group
     num_groups = len(df_)
-
-    width = 0.8 / num_groups      # グループごとの棒の幅
-
-    plt.figure(figsize=(10, 6))
+    width = 0.8 / num_groups
+    # Plots for each group
     x_labels=None
     for idx in range(num_groups):
         v = list(df_["Vals"])[idx]
-        new_v=rename_axis(None, attr_val, v)
-        x_labels=new_v
-        x = np.arange(len(new_v))
+        x_labels=rename_axis(None, attr_val, v)
+        x = np.arange(len(x_labels))
         param = list(df_["Param"])[idx]
-        if group_key is not None:
-          label = list(df_[group_key])[idx]
-        else:
-          label = f"Group {idx+1}"
+        label=_get_group_label(idx,group_key,group_mapping)
         plt.bar(x + idx * width, param, width=width, label=label)
-
     plt.xticks(x + width * (num_groups - 1) / 2, x_labels, rotation=90)
     plt.title(title)
     plt.legend()
     plt.tight_layout()
-    plt.show()
+
+
