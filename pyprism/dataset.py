@@ -246,7 +246,7 @@ def preprocess(
         to_dat(X_discretized, y_discretized, out_filename, pred=pred, with_y=with_y)
     if out_test_filename is not None and X_test_disc is not None:
         to_dat(X_test_disc, y_test_disc, out_test_filename, pred=pred, with_y=with_y)
-    attr_list = X_discretized.columns
+    attr_list = list(X_discretized.columns)
     out = {
         "X": X,
         "y": y,

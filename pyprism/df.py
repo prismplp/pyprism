@@ -100,9 +100,9 @@ def disc2binlist(disc):
     return ["{:0.1f}-{:0.1f}".format(e1, e2) for e1, e2 in zip(bin[:-1], bin[1:])]
 
 
-def _get_group_label(idx, group_key, group_mapping):
+def _get_group_label(df, idx, group_key, group_mapping):
     if group_key is not None:
-        label = list(df_[group_key])[idx]
+        label = list(df[group_key])[idx]
         if group_mapping is not None and isinstance(group_mapping, list):
             label = group_mapping[int(label)]
         elif group_mapping is not None:
@@ -125,7 +125,7 @@ def plot_dist(df_, attr_val=None, group_key=None, group_mapping=None, title=""):
         x_labels = rename_axis(None, attr_val, v)
         x = np.arange(len(x_labels))
         param = list(df_["Param"])[idx]
-        label = _get_group_label(idx, group_key, group_mapping)
+        label = _get_group_label(df_, idx, group_key, group_mapping)
         plt.bar(x + idx * width, param, width=width, label=label)
     plt.xticks(x + width * (num_groups - 1) / 2, x_labels, rotation=90)
     plt.title(title)
