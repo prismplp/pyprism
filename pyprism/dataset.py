@@ -148,6 +148,7 @@ def preprocess(X,y,
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
     out_filename=None,
+    pred="data",
     with_y=True
 ):  # Returns: discretized X, y, and list of feature names
     if missing_px>0:
@@ -158,7 +159,7 @@ def preprocess(X,y,
     X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
     y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
     if out_filename:
-        to_dat(X_discretized, y_discretized, out_filename,with_y=with_y)
+        to_dat(X_discretized, y_discretized, out_filename,pred=pred,with_y=with_y)
 
     attr_list=X_discretized.columns
     out={"X":X,
@@ -177,7 +178,8 @@ def load_discrete_diabetes(
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
     out_filename=None,
-    with_y=True
+    pred="data",
+    with_y=True,
 ):  # Returns: discretized X, y, and list of feature names
     """
     This function loads the diabetes dataset, applies missing values if specified,
@@ -185,4 +187,4 @@ def load_discrete_diabetes(
 
     """
     X,y=sklearn.datasets.load_diabetes(return_X_y=True,as_frame=True,scaled=False)
-    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,with_y=with_y)
+    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,pred=pred,with_y=with_y)
