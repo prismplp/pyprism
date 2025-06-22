@@ -112,7 +112,7 @@ def plot_discretized_data(X_discretized: pd.DataFrame,title:str =None):
       plt.ylabel('Frequency')
       plt.show()
 
-def to_dat(X_discretized: pd.DataFrame, y_discretized: pd.DataFrame, out_filename: str="output.dat", pred:str ="data"):
+def to_dat(X_discretized: pd.DataFrame, y_discretized: pd.DataFrame, out_filename: str="output.dat", pred:str ="data", with_y=True):
   data = []
   # Ensure both X_discretized and y_discretized have the same index for alignment
   # If y_discretized might have missing indices compared to X_discretized,
@@ -135,7 +135,10 @@ def to_dat(X_discretized: pd.DataFrame, y_discretized: pd.DataFrame, out_filenam
   # Write to dat file
   with open(out_filename, 'w') as fp:
       for row,y_value in data:
-          fp.write(pred+"("+y_value+",["+','.join(row) + ']).\n')
+          if with_y:
+              fp.write(pred+"("+y_value+",["+','.join(row) + ']).\n')
+          else:
+              fp.write(pred+"(["+','.join(row) + ']).\n')
 
 def preprocess(X,y,
     missing_px: float = 0.0,       # Probability of introducing missing values in features X (0.0 to 1.0)
@@ -144,7 +147,8 @@ def preprocess(X,y,
     disc_bins_y: int = 8,          # Number of bins used to discretize the target y
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
-    out_filename=None
+    out_filename=None,
+    with_y=True
 ):  # Returns: discretized X, y, and list of feature names
     if missing_px>0:
         X=add_missing(X,p=missing_px)
@@ -154,7 +158,7 @@ def preprocess(X,y,
     X_discretized, discretizers=discretize(X,thresh_uniq=thresh_uniq_x,disc_bins=disc_bins_x)
     y_discretized, discretizer_y=discretize_y(y,thresh_uniq=thresh_uniq_y,disc_bins=disc_bins_y)
     if out_filename:
-        to_dat(X_discretized, y_discretized, out_filename)
+        to_dat(X_discretized, y_discretized, out_filename,with_y=with_y)
 
     attr_list=X_discretized.columns
     out={"X":X,
@@ -172,7 +176,8 @@ def load_discrete_diabetes(
     disc_bins_y: int = 8,          # Number of bins used to discretize the target y
     thresh_uniq_x: int = 10,       # Threshold for number of unique values in a column of X before discretizing
     thresh_uniq_y: int = 10,        # Threshold for number of unique values in y before discretizing
-    out_filename=None
+    out_filename=None,
+    with_y=True
 ):  # Returns: discretized X, y, and list of feature names
     """
     This function loads the diabetes dataset, applies missing values if specified,
@@ -180,4 +185,4 @@ def load_discrete_diabetes(
 
     """
     X,y=sklearn.datasets.load_diabetes(return_X_y=True,as_frame=True,scaled=False)
-    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename)
+    return preprocess(X,y,missing_px,missing_py,disc_bins_x,disc_bins_y,thresh_uniq_x,thresh_uniq_y,out_filename=out_filename,with_y=with_y)
