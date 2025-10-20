@@ -21,11 +21,24 @@ class PrismEngine:
     def set_db(self, code):
         self.db=code
 
-    def query(self, q, findall=False, out=None, err_verbose=True, verbose=False,args=[]):
+    def query(self, q, find_n=None, findall=False, out=None, err_verbose=True, verbose=False,args=[]):
         ### generate query
         if q.strip()[-1]==".":
             q=q.strip()[:-1]
+        elif q.strip()[-1]==",":
+            q=q.strip()[:-1]
         ### generate output query
+        find_n_db="""
+$find_n(G,M):-assert($solution_count(0)),!,
+    call(G),
+    $solution_count(N),
+    assert($find_n_solution(G)),
+    N1 is N+1,
+    retract($solution_count(N)),
+    assert($solution_count(N1)),
+    N1>=M.
+    """
+
         if out is not None:
             if isinstance(out, str):
                 out=[out]
@@ -36,6 +49,18 @@ class PrismEngine:
                 else:
                     s+=',format("{}=~w\n",[{}])'.format(out[-1],out[-1])
                 q=q+","+s
+            elif len(out)>0 and find_n is not None:
+                s="'"+"','".join(out)+"'"
+                q=""" findall([{}], ({}),_Temp_),
+                  maplist(_TempX_ ,
+                    ( [_TempXSym1_|_TempXSymR_]=[{}],
+                      [_TempX1_|_TempXR_]=_TempX_,
+                      format("~w=~w",[_TempXSym1_,_TempX1_]),
+                    maplist(_TempXSym_,_TempXEl_,
+                      (format(",~w=~w",[_TempXSym_,_TempXEl_]))
+                      ,_TempXSymR_,_TempXR_),
+                    format("\n") ) ,_Temp_)""".format(",".join(out),q,s)
+
             elif len(out)>0 and findall:
                 s="'"+"','".join(out)+"'"
                 q=""" findall([{}], ({}),_Temp_),
