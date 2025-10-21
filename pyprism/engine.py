@@ -28,7 +28,19 @@ class PrismEngine:
         elif q.strip()[-1]==",":
             q=q.strip()[:-1]
         ### generate output query
-        find_n_db="""
+        find_n_db=""
+        if out is not None:
+            if isinstance(out, str):
+                out=[out]
+            if len(out)>0 and not findall and find_n is None:
+                s=",".join(['format("{}=~w,",[{}])'.format(el,el) for el in out[:-1]])
+                if len(out)==1:
+                    s='format("{}=~w\n",[{}])'.format(out[-1],out[-1])
+                else:
+                    s+=',format("{}=~w\n",[{}])'.format(out[-1],out[-1])
+                q=q+","+s
+            elif len(out)>0 and find_n is not None:
+                find_n_db="""
 $find_n(G,M):-assert($solution_count(0)),!,
     call(G),
     $solution_count(N),
@@ -44,18 +56,6 @@ $find_n(Vars, Goal, M, Out):-
     findall(Vars,($find_n_solution(G),G=Goal),Out).
 
     """
-
-        if out is not None:
-            if isinstance(out, str):
-                out=[out]
-            if len(out)>0 and not findall:
-                s=",".join(['format("{}=~w,",[{}])'.format(el,el) for el in out[:-1]])
-                if len(out)==1:
-                    s='format("{}=~w\n",[{}])'.format(out[-1],out[-1])
-                else:
-                    s+=',format("{}=~w\n",[{}])'.format(out[-1],out[-1])
-                q=q+","+s
-            elif len(out)>0 and find_n is not None:
                 s="'"+"','".join(out)+"'"
                 q=""" $find_n([{}],({}),{},_Temp_),
                   maplist(_TempX_ ,
@@ -80,7 +80,7 @@ $find_n(Vars, Goal, M, Out):-
                     format("\n") ) ,_Temp_)""".format(",".join(out),q,s)
         if verbose:
             print("new query:",q)
-        code=self.db+"\nprism_main :-"+q+".\n"
+        code=self.db+"\n"+find_n_db+"\nprism_main :-"+q+".\n"
         ### run
         out=self.run(code,args)
         if verbose:
