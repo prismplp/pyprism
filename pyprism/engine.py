@@ -37,6 +37,12 @@ $find_n(G,M):-assert($solution_count(0)),!,
     retract($solution_count(N)),
     assert($solution_count(N1)),
     N1>=M.
+$find_n(Vars, Goal, M, Out):-
+    copy_term(Goal,Goal_),
+    $find_n(Goal_, M),
+    $find_n_solution(G1),
+    findall(Vars,($find_n_solution(G),G=Goal),Out).
+
     """
 
         if out is not None:
@@ -51,7 +57,7 @@ $find_n(G,M):-assert($solution_count(0)),!,
                 q=q+","+s
             elif len(out)>0 and find_n is not None:
                 s="'"+"','".join(out)+"'"
-                q=""" findall([{}], ({}),_Temp_),
+                q=""" $find_n([{}],({}),{},_Temp_),
                   maplist(_TempX_ ,
                     ( [_TempXSym1_|_TempXSymR_]=[{}],
                       [_TempX1_|_TempXR_]=_TempX_,
@@ -59,7 +65,7 @@ $find_n(G,M):-assert($solution_count(0)),!,
                     maplist(_TempXSym_,_TempXEl_,
                       (format(",~w=~w",[_TempXSym_,_TempXEl_]))
                       ,_TempXSymR_,_TempXR_),
-                    format("\n") ) ,_Temp_)""".format(",".join(out),q,s)
+                    format("\n") ) ,_Temp_)""".format(",".join(out),q,find_n,s)
 
             elif len(out)>0 and findall:
                 s="'"+"','".join(out)+"'"
