@@ -90,8 +90,13 @@ def parse_expr(ts, min_prec=0):
     # Prefix unary operators
     if kind == 'OP' and value in PREFIX_OPS:
         ts.next()
-        right = parse_expr(ts, PRECEDENCE[value])
-        node = {'unary': value, 'expr': right}
+        tok2 = ts.peek()
+        if (tok2 is None or tok2[0] == 'COMMA' or tok2[0] == 'RPAREN' or tok2[0] == 'RBRACK'):
+            node = {'nullary': value}
+            return node
+        else:
+            right = parse_expr(ts, PRECEDENCE[value])
+            node = {'unary': value, 'expr': right}
     else:
         node = parse_atom(ts)
 
@@ -191,6 +196,10 @@ def serialize_term(obj, unary_op_paren=True, binary_op_paren=True):
         func = obj['name']
         args = ','.join(serialize_term(arg) for arg in obj['args'])
         return f"{func}({args})"
+    if isinstance(obj, dict) and 'nullary' in obj:
+        # nullary op
+        name = obj["nullary"]
+        return f"{name}"
     if isinstance(obj, dict) and 'unary' in obj:
         # unary op
         name = obj["unary"]
